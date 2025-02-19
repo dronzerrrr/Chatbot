@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Chatbot</title>
+    <style>
+        *
+        {
+            padding: 0;
+            margin: 0;
+        }
+        body { 
+            position: relative;
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #f4f4f4;
+        }
+        .chat-container { 
+                         background-color: rgba(255, 255, 255, 0.7);
+                         padding-top: 10%;
+                         width: 50%; 
+                         margin: auto; 
+                         border: 1px solid black; 
+                         padding: 10px; 
+                         border-radius: 10px; 
+                         box-shadow: 2px 2px 2px black;
+        }
+
+        .chat-box { 
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid black; 
+            border-radius: 10px; 
+            padding: 10px; 
+            box-shadow: 2px 2px 2px white;
+        }
+        .input-box { 
+            margin-top: 10px; 
+            display: flex; 
+        }
+        input, button { 
+            padding: 10px; 
+        }
+        .user { 
+            font-weight: bold;
+            text-align: right; 
+            color: #000000; 
+            
+        }
+        .bot {
+            font-weight: bold;
+            text-align: left; 
+            color: rgb(80, 4, 134); 
+        }
+        h1 {
+            font-size: xx-large;
+            color: black;
+        }
+        .back
+        {
+            background-image: url("bg1.jpg");
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("bg1.jpg");
+            background-size: cover;
+            background-position: center;
+
+        }
+        h1
+        {
+            text-shadow: 2px 2px 2px rgb(194, 186, 186);
+            padding-bottom: 5%;
+            padding-top: 1%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="back">
+        <h1 style="color:white; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">Quiz Chatbot</h1>
+        <div class="chat-container" id="chat-area">
+            <div class="chat-box" id="chat-box"></div>
+            <div class="input-box">
+                <input type="text" id="user-input" placeholder="Type a message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+        
+    <script>
+        const API_KEY = "tgp_v1_pxnawegAb47pn6iHMuJuKI_hJI0SRAUZhQlXZkYIIGw";
+        const MODEL = "meta-llama/Llama-Vision-Free";
+        
+        let chatHistory = [
+            { role: "system", content: "You are a coding quiz chatbot. Only ask or answer programming questions about C, C++, Java, or Python.Start by making a Coding related Joke.If user Prompts Hello respond with World!" }
+        ];
+        
+        async function chatWithAI(userInput) {
+            chatHistory.push({ role: "user", content: userInput });
+        
+            const response = await fetch("https://api.together.xyz/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: MODEL,
+                    messages: chatHistory
+                })
+            });
+            
+            const data = await response.json();
+            const aiReply = data.choices[0].message.content;
+        
+            chatHistory.push({ role: "assistant", content: aiReply });
+            return aiReply;
+        }
+        
+        function addMessage(role, content) {
+            let chatBox = document.getElementById("chat-box");
+            let messageDiv = document.createElement("div");
+            messageDiv.classList.add(role === "bot" ? "bot" : "user");
+            messageDiv.innerText = content;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        document.getElementById("send-button").addEventListener("click", async () => {
+            let userInput = document.getElementById("user-input").value.trim();
+            if (!userInput) return;
+            addMessage("user", userInput);
+            document.getElementById("user-input").value = "";
+        
+            let aiResponse = await chatWithAI(userInput);
+            addMessage("bot", aiResponse);
+        });
+    </script>
+</body>
+</html>
